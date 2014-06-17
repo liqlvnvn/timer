@@ -3,7 +3,8 @@ module Main where
 import System.Environment (getArgs)
 import System.Console.GetOpt
 
--- import Utils.Helpers
+import Data.Time
+--import Utils.Helpers
 
 data Flag = Start String
           | Stop
@@ -25,7 +26,6 @@ compilerOpts argv =
                                                 usageInfo header options
                       where header = "Usage: ic [OPTION...] param"
 
-
 selectAction :: IO [Flag] -> IO ()
 selectAction list = do 
     flag <- list
@@ -35,15 +35,16 @@ selectAction list = do
         Status     -> putStrLn "Status"
 
 startTimer :: String -> IO()
-startTimer arg = putStrLn arg
--- checkArgument :: [[String]] -> Bool
--- checkArgument args =
+startTimer arg =
+    putStrLn arg
 
 main :: IO ()
 main = do
     args <- getArgs
-    -- checkArgument args
-    -- print $ compilerOpts args
---    print $ compilerOpts args
-    p <- selectAction $ compilerOpts $ args
-    print p
+    --print p
+    print args
+    t <- getCurrentTime
+    print t
+    zone <- getCurrentTimeZone
+    let tl = utcToLocalTime zone t
+    print tl
