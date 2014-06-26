@@ -2,6 +2,8 @@ module Main where
 
 import System.Environment (getArgs)
 import System.Console.GetOpt
+import Control.Monad (forever)
+import Control.Concurrent (threadDelay)
 
 import Data.Time
 --import Utils.Helpers
@@ -43,8 +45,9 @@ main = do
     args <- getArgs
     --print p
     print args
-    t <- getCurrentTime
-    print t
     zone <- getCurrentTimeZone
-    let tl = utcToLocalTime zone t
-    print tl
+    forever $ do 
+        currentTime <- getCurrentTime
+        threadDelay 1000000
+        putStrLn $ show $ utcToLocalTime zone currentTime
+--utcToLocalTime zone
