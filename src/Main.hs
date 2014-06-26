@@ -2,12 +2,13 @@ module Main where
 
 import System.Environment (getArgs)
 import System.Console.GetOpt
-import Control.Monad (forever)
+import Control.Monad (when)
 import Control.Concurrent (threadDelay)
 
 import Data.Time
+import Data.Time.Clock.POSIX
 --import Utils.Helpers
-
+--
 data Flag = Start String
           | Stop
           | Status
@@ -32,13 +33,29 @@ selectAction :: IO [Flag] -> IO ()
 selectAction list = do 
     flag <- list
     case head flag of
-        Start a    -> startTimer a
+    --    Start a    -> startTimer a
         Stop       -> putStrLn "Stop"
         Status     -> putStrLn "Status"
 
-startTimer :: String -> IO()
-startTimer arg =
-    putStrLn arg
+startTimer :: Integer -> UTCTime -> TimeZone -> IO()
+startTimer arg startTime zone = do
+    -- arg - number of seconds we want to wait
+    let diffTimeTillEnd  = secondsToDiffTime arg
+    let utcTimeTillEnd = UTCTime {utctDay=(utctDay startTime),utctDayTime=diffTimeTillEnd}
+    putStrLn $ show startTime 
+    putStrLn $ show utcTimeTillEnd
+    let endTimeInSeconds = utcTimeToPOSIXSeconds startTime 
+                         + utcTimeToPOSIXSeconds utcTimeTillEnd
+    let endTime = posixSecondsToUTCTime endTimeInSeconds
+    timerLoop endTime zone
+
+timerLoop :: UTCTime -> TimeZone -> IO ()
+timerLoop endTime zone = do 
+    currentTime <- getCurrentTime
+    threadDelay 1000000
+    putStrLn $ show $ utcToLocalTime zone currentTime
+    putStrLn $ show $ utcToLocalTime zone endTime
+    when (currentTime < endTime) (timerLoop endTime zone)
 
 main :: IO ()
 main = do
@@ -46,8 +63,6 @@ main = do
     --print p
     print args
     zone <- getCurrentTimeZone
-    forever $ do 
-        currentTime <- getCurrentTime
-        threadDelay 1000000
-        putStrLn $ show $ utcToLocalTime zone currentTime
---utcToLocalTime zone
+    --utcToLocalTime zone
+    cTime <- getCurrentTime
+    startTimer 10 cTime zone
